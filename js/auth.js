@@ -98,12 +98,33 @@ document.querySelectorAll('input').forEach(input => {
 
 // إدخال تلقائي للبيانات للتجربة (يمكن حذفها لاحقاً)
 document.addEventListener('DOMContentLoaded', function() {
-    // إضافة نص مساعد للإدخال
-    // const emailInput = document.getElementById('email');
-    // emailInput.placeholder = "أدخل أي بريد إلكتروني (مثال: test@test.com)";
-    
-    // const passwordInput = document.getElementById('password'); 
-    // passwordInput.placeholder = "أدخل أي كلمة مرور (3 أحرف على الأقل)";
-    
-    console.log('Login page ready - يمكنك استخدام أي إيميل وباسوورد للتجربة');
+    try {
+        const input = document.getElementById('apiBaseInput');
+        const btn = document.getElementById('saveApiBaseBtn');
+        const saved = localStorage.getItem('apiBase') || '';
+        if (input) input.value = saved;
+        if (btn) {
+            btn.addEventListener('click', async function(){
+                const val = (input && input.value || '').trim();
+                if (!val) { showAlert('أدخل رابط السيرفر أولاً'); return; }
+                try {
+                    localStorage.setItem('apiBase', val);
+                    const ok = await fetch(val + '/health').then(r => r.ok).catch(()=>false);
+                    if (ok) {
+                        showAlert('تم حفظ رابط السيرفر بنجاح', 'success');
+                    } else {
+                        showAlert('تعذر الوصول للسيرفر. تحقق من الرابط');
+                    }
+                } catch(e) {
+                    showAlert('فشل حفظ الرابط');
+                }
+            });
+        }
+        const p = new URLSearchParams(window.location.search);
+        const q = p.get('api') || p.get('apiBase');
+        if (q) {
+            localStorage.setItem('apiBase', q);
+            if (input) input.value = q;
+        }
+    } catch(_) {}
 });
