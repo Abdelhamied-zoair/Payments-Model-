@@ -12,7 +12,10 @@
     try {
       const meta = (typeof document !== 'undefined') ? document.querySelector('meta[name="api-base"]') : null;
       const metaVal = meta && meta.getAttribute('content');
-      if (metaVal) return metaVal;
+      if (metaVal) {
+        try { localStorage.setItem('apiBase', metaVal); } catch(_) {}
+        return metaVal;
+      }
     } catch(_) {}
     const origin = (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000');
     try {
