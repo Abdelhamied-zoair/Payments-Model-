@@ -1,5 +1,5 @@
 {
-<meta name="api-base" content="https://YOUR_BACKEND_URL">  "version": 2,
+  "version": 2,
   "routes": [
     { "src": "/(.*)", "dest": "/$1" }
   ]
