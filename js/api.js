@@ -30,11 +30,26 @@
     const finalHeaders = { 'Content-Type': 'application/json', ...headers };
     if (auth?.token) finalHeaders['Authorization'] = 'Bearer ' + auth.token;
 
-    const res = await fetch(url.toString(), {
+    let res = await fetch(url.toString(), {
       method,
       headers: finalHeaders,
       body: body ? JSON.stringify(body) : null,
     });
+
+    // Fallback for Vercel setups that proxy APIs under /api
+    try {
+      const isVercel = typeof window !== 'undefined' && String(window.location.hostname).includes('vercel.app');
+      const notApi = !String(path||'').startsWith('/api/');
+      if (isVercel && notApi && res && res.status === 404) {
+        const alt = new URL(API_BASE + '/api' + path);
+        Object.entries(params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            alt.searchParams.set(key, value);
+          }
+        });
+        res = await fetch(alt.toString(), { method, headers: finalHeaders, body: body ? JSON.stringify(body) : null });
+      }
+    } catch(_) {}
 
     let data = null;
     try { data = await res.json(); } catch (e) { /* ignore */ }
