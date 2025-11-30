@@ -47,23 +47,25 @@
     let res = null;
     let data = null;
     let ok = false;
+    let status = 0;
     for (let i = 0; i < candidates.length; i++) {
       const urlStr = buildUrl(candidates[i].base, path, candidates[i].apiPrefix);
       try {
         res = await fetch(urlStr, { method, headers: finalHeaders, body: body ? JSON.stringify(body) : null });
+        status = res.status;
         try { data = await res.json(); } catch (e) { data = null; }
         ok = !!res && res.ok;
         if (ok) break;
       } catch(_) {
         ok = false;
+        status = 0;
       }
     }
-
-    let data = null;
+    
     try { data = data ?? null; } catch (e) { data = null; }
 
     if (!ok) {
-      if (res.status === 401) {
+      if (status === 401) {
         const errMsg = (data && (data.error || data.message)) || 'Unauthorized';
         throw new Error(errMsg);
       }
