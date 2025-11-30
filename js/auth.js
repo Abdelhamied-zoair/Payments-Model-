@@ -98,12 +98,33 @@ document.querySelectorAll('input').forEach(input => {
 
 // إدخال تلقائي للبيانات للتجربة (يمكن حذفها لاحقاً)
 document.addEventListener('DOMContentLoaded', function() {
-    // إضافة نص مساعد للإدخال
-    // const emailInput = document.getElementById('email');
-    // emailInput.placeholder = "أدخل أي بريد إلكتروني (مثال: test@test.com)";
-    
-    // const passwordInput = document.getElementById('password'); 
-    // passwordInput.placeholder = "أدخل أي كلمة مرور (3 أحرف على الأقل)";
-    
-    console.log('Login page ready - يمكنك استخدام أي إيميل وباسوورد للتجربة');
+    try {
+        const input = document.getElementById('apiBaseInput');
+        const btn = document.getElementById('saveApiBaseBtn');
+        const saved = localStorage.getItem('apiBase') || '';
+        if (input) input.value = saved;
+        if (btn) {
+            btn.addEventListener('click', async function(){
+                const val = (input && input.value || '').trim();
+                if (!val) { showAlert('Enter your server URL first'); return; }
+                try {
+                    localStorage.setItem('apiBase', val);
+                    const ok = await fetch(val + '/health').then(r => r.ok).catch(()=>false);
+                    if (ok) {
+                        showAlert('Server URL saved', 'success');
+                    } else {
+                        showAlert('Cannot reach server. Check the URL');
+                    }
+                } catch(e) {
+                    showAlert('Failed to save URL');
+                }
+            });
+        }
+        const p = new URLSearchParams(window.location.search);
+        const q = p.get('api') || p.get('apiBase');
+        if (q) {
+            localStorage.setItem('apiBase', q);
+            if (input) input.value = q;
+        }
+    } catch(_) {}
 });
