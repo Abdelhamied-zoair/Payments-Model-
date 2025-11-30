@@ -567,6 +567,8 @@ body:not(.sidebar-collapsed) .footer {
     }
 }
 
+
+
 @media (max-width: 767px) {
     .nav-container {
         gap: 10px;
@@ -643,6 +645,21 @@ body:not(.sidebar-collapsed) .footer {
         display: none;
     }
 }
+
+
+
+/* تحسينات للهيدر على الشاشات الصغيرة جداً */
+@media (max-width: 480px) {
+    :root { --nav-height: 64px; }
+    .nav-brand .brand-text { display: none; }
+    .nav-search { display: none; }
+    .nav-icons { gap: 6px; }
+    .icon-item { padding: 6px; border-radius: 10px; }
+    .user-avatar { width: 32px; height: 32px; }
+    .navbar { padding: 0 12px; }
+}
+
+
 
 /* تأثيرات scroll للسايدبار */
 .sidebar::-webkit-scrollbar {
