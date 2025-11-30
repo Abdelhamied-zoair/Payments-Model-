@@ -9,6 +9,11 @@
         return fromQuery;
       }
     } catch(_) {}
+    try {
+      const meta = (typeof document !== 'undefined') ? document.querySelector('meta[name="api-base"]') : null;
+      const metaVal = meta && meta.getAttribute('content');
+      if (metaVal) return metaVal;
+    } catch(_) {}
     const origin = (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:4000');
     try {
       const saved = localStorage.getItem('apiBase');
@@ -20,7 +25,9 @@
 
   async function request(path, options = {}) {
     const { method = 'GET', headers = {}, body = null, params = {} } = options;
-    const url = new URL(API_BASE + path);
+    const base = String(API_BASE || '').replace(/\/$/, '');
+    const p = String(path || '');
+    const url = new URL(base + (p.startsWith('/') ? p : '/' + p));
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         url.searchParams.set(key, value);

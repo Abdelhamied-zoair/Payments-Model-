@@ -30,6 +30,9 @@ router.post('/login', async (req, res, next) => {
     if (!ok) return res.status(401).json({ error: 'البريد الإلكتروني أو كلمة المرور غير صحيحة' });
     
     const secret = process.env.JWT_SECRET || 'dev-secret';
+    if (!process.env.JWT_SECRET) {
+      console.warn('JWT_SECRET is not set; using development secret');
+    }
     const token = jwt.sign({ id: user.id, username: user.username, email: user.email, role: user.role }, secret, { expiresIn: '7d' });
     return res.json({ token, user: { id: user.id, username: user.username, email: user.email, role: user.role } });
   } catch (error) {

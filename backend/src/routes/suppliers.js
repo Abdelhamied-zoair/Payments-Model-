@@ -1,6 +1,7 @@
 import express from 'express';
 import { getDb } from '../db.js';
 import { authRequired } from '../middleware/auth.js';
+import { nextId, normalizeSupplierPayload } from '../utils/common.js';
 
 const router = express.Router();
 
@@ -55,33 +56,20 @@ router.get('/:id', authRequired, async (req, res, next) => {
 
 router.post('/', authRequired, async (req, res, next) => {
   try {
-    const {
-      name,
-      email,
-      phone,
-      address,
-      bank_name,
-      iban,
-      tax_number,
-      // Accept camelCase variants from frontend
-      bankName,
-      ibanNumber,
-      taxNumber,
-    } = req.body;
-    if (!name) return res.status(400).json({ error: 'name is required' });
+    const payload = normalizeSupplierPayload(req.body || {});
+    if (!payload.name) return res.status(400).json({ error: 'name is required' });
     const db = await getDb();
     db.data.suppliers = Array.isArray(db.data.suppliers) ? db.data.suppliers : [];
-    const lastId = (arr) => (Array.isArray(arr) && arr.length ? (arr[arr.length-1].id || 0) : 0);
-    const id = lastId(db.data.suppliers) + 1;
+    const id = nextId(db.data.suppliers);
     const supplier = {
       id,
-      name,
-      email: email || null,
-      phone: phone || null,
-      address: address || null,
-      bank_name: bank_name ?? bankName ?? null,
-      iban: iban ?? ibanNumber ?? null,
-      tax_number: tax_number ?? taxNumber ?? null,
+      name: payload.name,
+      email: payload.email,
+      phone: payload.phone,
+      address: payload.address,
+      bank_name: payload.bank_name,
+      iban: payload.iban,
+      tax_number: payload.tax_number,
       created_at: new Date().toISOString(),
     };
     db.data.suppliers.push(supplier);
@@ -94,7 +82,7 @@ router.post('/', authRequired, async (req, res, next) => {
 
 router.put('/:id', authRequired, async (req, res, next) => {
   try {
-    const { name, email, phone, address, bank_name, iban, tax_number, bankName, ibanNumber, taxNumber } = req.body;
+    const p = normalizeSupplierPayload(req.body || {});
     const db = await getDb();
     if (!db.data.suppliers) db.data.suppliers = [];
     const idx = db.data.suppliers.findIndex(s => s.id === Number(req.params.id));
@@ -102,13 +90,13 @@ router.put('/:id', authRequired, async (req, res, next) => {
     const existing = db.data.suppliers[idx];
     const updated = {
       ...existing,
-      name: name ?? existing.name,
-      email: email ?? existing.email,
-      phone: phone ?? existing.phone,
-      address: address ?? existing.address,
-      bank_name: bank_name ?? bankName ?? existing.bank_name,
-      iban: iban ?? ibanNumber ?? existing.iban,
-      tax_number: tax_number ?? taxNumber ?? existing.tax_number,
+      name: p.name ?? existing.name,
+      email: p.email ?? existing.email,
+      phone: p.phone ?? existing.phone,
+      address: p.address ?? existing.address,
+      bank_name: p.bank_name ?? existing.bank_name,
+      iban: p.iban ?? existing.iban,
+      tax_number: p.tax_number ?? existing.tax_number,
     };
     db.data.suppliers[idx] = updated;
     await db.write();

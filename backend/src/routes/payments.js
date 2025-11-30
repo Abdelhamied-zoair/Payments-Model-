@@ -1,6 +1,7 @@
 import express from 'express';
 import { getDb } from '../db.js';
 import { authRequired } from '../middleware/auth.js';
+import { nextId } from '../utils/common.js';
 
 const router = express.Router();
 
@@ -42,7 +43,7 @@ router.post('/', authRequired, async (req, res, next) => {
     if (!supplier_id || !amount) return res.status(400).json({ error: 'supplier_id and amount are required' });
     const db = await getDb();
     if (!db.data.payments) db.data.payments = [];
-    const id = (db.data.payments.length > 0 ? (db.data.payments[db.data.payments.length - 1]?.id || 0) : 0) + 1;
+    const id = nextId(db.data.payments);
     const payment = {
       id,
       supplier_id: Number(supplier_id),
